@@ -1,12 +1,20 @@
 package com.gui;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.plaf.nimbus.NimbusLookAndFeel;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
 
 public class PanelZakonu extends JPanel {
 
     JFrame ramkaGlowna;
-    JTextField inputLogin;
+    JTextField jediPath;
+    JTextField plikZakonow;
+    JButton importJedi;
+    JButton importZakonow;
 
 
     public PanelZakonu(JFrame ramka) {
@@ -49,18 +57,19 @@ public class PanelZakonu extends JPanel {
         dostepniJedi.setBorder(BorderFactory.createLineBorder(Color.BLACK));
         add(dostepniJedi);
 
-        JButton importZak = new JButton("Import");
-        importZak.setBounds(30, 620, 100, 25);
-        add(importZak);
+        importZakonow = new JButton("Import");
+        importZakonow.setBounds(30, 620, 100, 25);
+        importZakonow.addActionListener(new AkcjaPobrania());
+        add(importZakonow);
 
         JButton eksportZak = new JButton("Eksport");
         eksportZak.setBounds(30, 655, 100, 25);
         add(eksportZak);
 
-        JTextField impEkspPlik = new JTextField();
-        impEkspPlik.setBounds(150, 640, 220, 25);
-        impEkspPlik.setEditable(false);
-        add(impEkspPlik);
+        plikZakonow = new JTextField();
+        plikZakonow.setBounds(150, 640, 220, 25);
+        plikZakonow.setEditable(false);
+        add(plikZakonow);
 
         JButton zarejestrujZak = new JButton("Zarejestruj");
         zarejestrujZak.setBounds(150, 700, 100, 20);
@@ -134,18 +143,19 @@ public class PanelZakonu extends JPanel {
         strona.add(ciemna);
         strona.add(jasna);
 
-        JButton importJedi = new JButton("Import");
+        importJedi = new JButton("Import");
         importJedi.setBounds(460, 620, 100, 25);
+        importJedi.addActionListener(new AkcjaPobrania());
         add(importJedi);
 
         JButton eksportJedi = new JButton("Eksport");
         eksportJedi.setBounds(460, 655, 100, 25);
         add(eksportJedi);
 
-        JTextField impEkspPlikJedi = new JTextField();
-        impEkspPlikJedi.setBounds(580, 640, 220, 25);
-        impEkspPlikJedi.setEditable(false);
-        add(impEkspPlikJedi);
+        jediPath = new JTextField();
+        jediPath.setBounds(580, 640, 220, 25);
+        jediPath.setEditable(false);
+        add(jediPath);
 
         JButton zarejestrujJedi = new JButton("Zarejestruj");
         zarejestrujJedi.setBounds(580, 700, 100, 20);
@@ -155,7 +165,32 @@ public class PanelZakonu extends JPanel {
         wyczyscJedi.setBounds(690, 700, 100, 20);
         add(wyczyscJedi);
 
+    }
 
+
+
+
+    class AkcjaPobrania implements ActionListener {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+
+            Object o = e.getSource();
+
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setCurrentDirectory(new File(System.getProperty("user.dir")));
+            if(fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+                File plik = fileChooser.getSelectedFile();
+                if (o == importJedi) {
+                    jediPath.setText(plik.getPath());
+                }else if(o == importZakonow) {
+                    plikZakonow.setText(plik.getPath());
+                }
+            }
+
+
+
+        }
     }
 
     @Override
