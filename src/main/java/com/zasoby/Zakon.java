@@ -55,4 +55,16 @@ public class Zakon {
         return zakony;
     }
 
+    public static void wyczyscListeZakonow() {
+        if (listaZakonow.size() > 0)
+            listaZakonow.subList(0, listaZakonow.size()).clear();
+    }
+
+    public static boolean czyZakonIstnieje(String nazwa) {
+        for (Zakon z: listaZakonow)
+            if (z.getNazwa().equals(nazwa)) {
+                return true;
+            }
+        return false;
+    }
 }

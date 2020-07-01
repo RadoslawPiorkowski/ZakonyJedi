@@ -10,13 +10,17 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.sql.*;
+import java.util.ArrayList;
 
 public class PanelZakonu extends JPanel {
 
+    ArrayList<Jedi> listaAdeptow = new ArrayList<Jedi>();
 
     JFrame ramkaGlowna;
     JTextField jediPath;
     JTextField plikZakonow;
+    JTextField inputNazwaZak;
     JButton importJedi;
     JButton importZakonow;
     JSlider poziomMocy;
@@ -57,7 +61,7 @@ public class PanelZakonu extends JPanel {
         nazwa.setBounds(30, 385, 100, 25);
         add(nazwa);
 
-        JTextField inputNazwaZak = new JTextField();
+        inputNazwaZak = new JTextField();
         inputNazwaZak.setBounds(150, 385, 220, 25);
         add(inputNazwaZak);
 
@@ -90,10 +94,12 @@ public class PanelZakonu extends JPanel {
 
         JButton zarejestrujZak = new JButton("Zarejestruj");
         zarejestrujZak.setBounds(150, 700, 100, 20);
+        zarejestrujZak.addActionListener(new StworzZakon());
         add(zarejestrujZak);
 
         JButton wyczyscZak = new JButton("Wyczysc");
         wyczyscZak.setBounds(260, 700, 100, 20);
+        wyczyscZak.addActionListener(new WyczyscZakon());
         add(wyczyscZak);
 
 
@@ -212,20 +218,12 @@ public class PanelZakonu extends JPanel {
     }
 
 
-    class PobranieMocy implements ActionListener {
-
-        @Override
-        public void actionPerformed(ActionEvent actionEvent) {
-            System.out.println(poziomMocy.getValue());
-        }
-    }
-
-
     class DodanieZakonu implements ActionListener {
 
         @Override
         public void actionPerformed(ActionEvent actionEvent) {
             try {
+                listaAdeptow.add(dostepniJedi.getSelectedValue());
                 dostepniJedi.getSelectedValue().setIdZakonu(100);
                 System.out.println(dostepniJedi.getSelectedValue().getIdZakonu());
                 if (!model.isEmpty())
@@ -246,19 +244,20 @@ public class PanelZakonu extends JPanel {
     }
 
     public void getDostepniJedi() {
+        model.removeAllElements();
         dostepniJedi.setModel(model);
         for (Jedi j : Jedi.getJediBezZakonu())
             model.addElement(j);
     }
 
+
     @Override
     public Dimension getPreferredSize() {
         return new Dimension(830, 770);
-
     }
 
-    class RejestracjaJedi implements ActionListener {
 
+    class RejestracjaJedi implements ActionListener {
 
         @Override
         public void actionPerformed(ActionEvent actionEvent) {
@@ -266,16 +265,89 @@ public class PanelZakonu extends JPanel {
             try {
                 nowyJedi = new Jedi(inputNazwaJedi.getText(), kolory.getSelectedItem().toString(), poziomMocy.getValue(), strona.getSelection().getActionCommand(), 1);
                 wypiszJedi();
+                getDostepniJedi();
             } catch (NullPointerException ex){
                 JOptionPane.showMessageDialog(null,"Źle zdefiniowany rycerz Jedi!", "Błąd rejstracji", JOptionPane.WARNING_MESSAGE);
             }
         }
     }
 
+    class WyczyscZakon implements ActionListener {
+
+        @Override
+        public void actionPerformed(ActionEvent actionEvent) {
+
+            inputNazwaZak.setText(null);
+
+            for (Jedi j : listaAdeptow)
+                j.setIdZakonu(1);
+
+            if (listaAdeptow.size() > 1)
+                listaAdeptow.subList(1, listaAdeptow.size()).clear();
+
+            wypiszJedi();
+            getDostepniJedi();
+        }
+    }
 
 
-    public void StworzZakon(String nazwa, int czlonkownie) {
 
+    class StworzZakon implements ActionListener {
+
+        @Override
+        public void actionPerformed(ActionEvent actionEvent) {
+            Connection connection = null;
+
+            if (inputNazwaZak.getText().isEmpty()) {
+                JOptionPane.showMessageDialog(null,"Brak nazwy zakonu!", "Błąd rejstracji", JOptionPane.WARNING_MESSAGE);
+            } else if (Zakon.czyZakonIstnieje(inputNazwaZak.getText())) {
+                JOptionPane.showMessageDialog(null,"Zakon o takiej nazwie już istnieje!", "Błąd rejstracji", JOptionPane.WARNING_MESSAGE);
+            } else
+                try {
+                connection = DriverManager.getConnection("jdbc:postgresql:Jedi", "postgres", "425@hejBudowa");
+                Statement statement = connection.createStatement();
+
+                statement.execute("INSERT INTO Zakony (Nazwa, Ilosc_Czlonkow) VALUES " +
+                        "('" + inputNazwaZak.getText() + "', " + listaAdeptow.size() + ");");
+
+                Zakon.wyczyscListeZakonow();
+
+                ResultSet data = statement.executeQuery("SELECT * FROM Zakony");
+                while (data.next())
+                    new Zakon(data.getInt("ID_Zakonu"), data.getString("Nazwa"), data.getInt("Ilosc_Czlonkow"));
+
+                wypiszZakony();
+
+                if (listaAdeptow.size() > 0)
+                    listaAdeptow.subList(0, listaAdeptow.size()).clear();
+
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+
+    class PowolajJedi implements ActionListener {
+
+
+        @Override
+        public void actionPerformed(ActionEvent actionEvent) {
+            Connection connection = null;
+            try {
+                connection = DriverManager.getConnection("jdbc:postgresql:Jedi", "postgres", "425@hejBudowa");
+                Statement statement = connection.createStatement();
+                ResultSet data = statement.executeQuery("SELECT * FROM Jedi");
+
+                while (data.next())
+                    new Jedi(data.getString("Imie"), data.getString("Kolor_Miecza"), data.getInt("Poziom_Mocy"), data.getString("Strona_Mocy"), data.getInt("Zakon_ID"));
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+
+
+            
+        }
     }
 
 }
