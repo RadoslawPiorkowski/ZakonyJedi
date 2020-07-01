@@ -1,5 +1,8 @@
 package com.gui;
 
+import com.zasoby.Jedi;
+import com.zasoby.Zakon;
+
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.plaf.nimbus.NimbusLookAndFeel;
@@ -10,11 +13,20 @@ import java.io.File;
 
 public class PanelZakonu extends JPanel {
 
+
     JFrame ramkaGlowna;
     JTextField jediPath;
     JTextField plikZakonow;
     JButton importJedi;
     JButton importZakonow;
+    JSlider poziomMocy;
+    JTextArea listaZakonow;
+    JTextArea listaJedi;
+    JList<Jedi> dostepniJedi;
+    DefaultListModel<Jedi> model;
+    JComboBox<String> kolory;
+    JTextField inputNazwaJedi;
+    ButtonGroup strona;
 
 
     public PanelZakonu(JFrame ramka) {
@@ -31,9 +43,10 @@ public class PanelZakonu extends JPanel {
         zakony.setBounds(160, 20, 100, 25);
         add(zakony);
 
-        JTextArea listaZakonow = new JTextArea();
+        listaZakonow = new JTextArea();
         listaZakonow.setBounds(20, 50, 360, 300);
         listaZakonow.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+        wypiszZakony();
         add(listaZakonow);
 
         JLabel rejestracjaZakonu = new JLabel("Rejestracja Zakonu Jedi");
@@ -50,11 +63,15 @@ public class PanelZakonu extends JPanel {
 
         JButton wybierz = new JButton("Wybierz");
         wybierz.setBounds(30, 420, 100, 25);
+        wybierz.addActionListener(new DodanieZakonu());
         add(wybierz);
 
-        JTextArea dostepniJedi = new JTextArea();
+        dostepniJedi = new JList<Jedi>();
         dostepniJedi.setBounds(150, 420, 220, 200);
         dostepniJedi.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+        model = new DefaultListModel<>();
+        getDostepniJedi();
+        dostepniJedi.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         add(dostepniJedi);
 
         importZakonow = new JButton("Import");
@@ -86,9 +103,10 @@ public class PanelZakonu extends JPanel {
         jedi.setBounds(610, 20, 100, 25);
         add(jedi);
 
-        JTextArea listaJedi = new JTextArea();
+        listaJedi = new JTextArea();
         listaJedi.setBounds(450, 50, 360, 300);
         listaJedi.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+        wypiszJedi();
         add(listaJedi);
 
         JLabel rejestracjaJedi = new JLabel("Rejestracja Jedi");
@@ -99,7 +117,7 @@ public class PanelZakonu extends JPanel {
         nazwaJedi.setBounds(460, 385, 100, 25);
         add(nazwaJedi);
 
-        JTextField inputNazwaJedi = new JTextField();
+        inputNazwaJedi = new JTextField();
         inputNazwaJedi.setBounds(580, 385, 220, 25);
         add(inputNazwaJedi);
 
@@ -107,7 +125,7 @@ public class PanelZakonu extends JPanel {
         kolorMiecza.setBounds(460, 425, 100, 25);
         add(kolorMiecza);
 
-        JComboBox<String> kolory = new JComboBox<String>();
+        kolory = new JComboBox<String>();
         kolory.addItem("Zielony");
         kolory.addItem("Niebieski");
         kolory.addItem("Fioletowy");
@@ -119,7 +137,7 @@ public class PanelZakonu extends JPanel {
         moc.setBounds(460, 495, 100, 25);
         add(moc);
 
-        JSlider poziomMocy = new JSlider(JSlider.HORIZONTAL, 0,1000,100);
+        poziomMocy = new JSlider(JSlider.HORIZONTAL, 0,1000,1);
         poziomMocy.setMinorTickSpacing(50);
         poziomMocy.setMajorTickSpacing(200);
         poziomMocy.setPaintLabels(true);
@@ -133,15 +151,18 @@ public class PanelZakonu extends JPanel {
 
         JRadioButton ciemna = new JRadioButton("ciemna");
         ciemna.setBounds(580, 580, 100, 25);
+        ciemna.setActionCommand(ciemna.getText());
         add(ciemna);
 
         JRadioButton jasna = new JRadioButton("jasna");
         jasna.setBounds(690, 580, 100, 25);
+        jasna.setActionCommand(jasna.getText());
         add(jasna);
 
-        ButtonGroup strona = new ButtonGroup();
+        strona = new ButtonGroup();
         strona.add(ciemna);
         strona.add(jasna);
+
 
         importJedi = new JButton("Import");
         importJedi.setBounds(460, 620, 100, 25);
@@ -159,6 +180,7 @@ public class PanelZakonu extends JPanel {
 
         JButton zarejestrujJedi = new JButton("Zarejestruj");
         zarejestrujJedi.setBounds(580, 700, 100, 20);
+        zarejestrujJedi.addActionListener(new RejestracjaJedi());
         add(zarejestrujJedi);
 
         JButton wyczyscJedi = new JButton("Wyczysc");
@@ -181,16 +203,52 @@ public class PanelZakonu extends JPanel {
             fileChooser.setCurrentDirectory(new File(System.getProperty("user.dir")));
             if(fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
                 File plik = fileChooser.getSelectedFile();
-                if (o == importJedi) {
+                if (o == importJedi)
                     jediPath.setText(plik.getPath());
-                }else if(o == importZakonow) {
+                else if(o == importZakonow)
                     plikZakonow.setText(plik.getPath());
-                }
             }
-
-
-
         }
+    }
+
+
+    class PobranieMocy implements ActionListener {
+
+        @Override
+        public void actionPerformed(ActionEvent actionEvent) {
+            System.out.println(poziomMocy.getValue());
+        }
+    }
+
+
+    class DodanieZakonu implements ActionListener {
+
+        @Override
+        public void actionPerformed(ActionEvent actionEvent) {
+            try {
+                dostepniJedi.getSelectedValue().setIdZakonu(100);
+                System.out.println(dostepniJedi.getSelectedValue().getIdZakonu());
+                if (!model.isEmpty())
+                    model.remove(dostepniJedi.getSelectedIndex());
+                wypiszJedi();
+            } catch (NullPointerException ex) {
+                System.out.println("Nie wybrano Jedi");
+            }
+        }
+    }
+
+    public void wypiszZakony () {
+        listaZakonow.setText(Zakon.getListaZakonow());
+    }
+
+    public void wypiszJedi() {
+        listaJedi.setText(Jedi.getListaJedi());
+    }
+
+    public void getDostepniJedi() {
+        dostepniJedi.setModel(model);
+        for (Jedi j : Jedi.getJediBezZakonu())
+            model.addElement(j);
     }
 
     @Override
@@ -199,5 +257,25 @@ public class PanelZakonu extends JPanel {
 
     }
 
+    class RejestracjaJedi implements ActionListener {
+
+
+        @Override
+        public void actionPerformed(ActionEvent actionEvent) {
+            Jedi nowyJedi;
+            try {
+                nowyJedi = new Jedi(inputNazwaJedi.getText(), kolory.getSelectedItem().toString(), poziomMocy.getValue(), strona.getSelection().getActionCommand(), 1);
+                wypiszJedi();
+            } catch (NullPointerException ex){
+                JOptionPane.showMessageDialog(null,"Źle zdefiniowany rycerz Jedi!", "Błąd rejstracji", JOptionPane.WARNING_MESSAGE);
+            }
+        }
+    }
+
+
+
+    public void StworzZakon(String nazwa, int czlonkownie) {
+
+    }
 
 }
