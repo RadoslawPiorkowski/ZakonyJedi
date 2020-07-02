@@ -79,7 +79,7 @@ public class Jedi {
         ArrayList<Jedi> jediBezZakonu = new ArrayList<Jedi>();
 
         for (int i = 0; i < listaJedi.size(); i++)
-            if (listaJedi.get(i).getIdZakonu() == 1) {
+            if (listaJedi.get(i).getIdZakonu() <= 1) {
                 jediBezZakonu.add(listaJedi.get(i));
             }
 

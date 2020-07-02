@@ -104,7 +104,6 @@ public class PanelZakonu extends JPanel {
         getDostepniJedi();
         dostepniJedi.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         add(dostepniJedi);
-
     }
 
 
@@ -121,7 +120,6 @@ public class PanelZakonu extends JPanel {
             try {
                 listaAdeptow.add(dostepniJedi.getSelectedValue());
                 dostepniJedi.getSelectedValue().setIdZakonu(Zakon.getNastepneID());
-                System.out.println(dostepniJedi.getSelectedValue().getIdZakonu());
                 if (!model.isEmpty())
                     model.remove(dostepniJedi.getSelectedIndex());
                 wypiszJedi();
