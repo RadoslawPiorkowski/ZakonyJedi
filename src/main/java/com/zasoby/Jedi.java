@@ -6,7 +6,7 @@ import java.util.List;
 
 public class Jedi {
 
-    public static List<Jedi> listaJedi = new ArrayList<Jedi>();
+    public static ArrayList<Jedi> listaJedi = new ArrayList<Jedi>();
 
     static {
         Connection connection = null;

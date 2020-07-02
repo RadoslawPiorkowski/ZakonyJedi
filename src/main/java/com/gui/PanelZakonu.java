@@ -1,6 +1,7 @@
 package com.gui;
 
 import com.zasoby.Jedi;
+import com.zasoby.Szfrowanie;
 import com.zasoby.Zakon;
 
 import javax.swing.*;
@@ -8,27 +9,36 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Objects;
+import java.util.Scanner;
 
 public class PanelZakonu extends JPanel {
 
     ArrayList<Jedi> listaAdeptow = new ArrayList<Jedi>();
 
     JFrame ramkaGlowna;
-    JTextField jediPath;
-    JTextField plikZakonow;
-    JTextField inputNazwaZak;
-    JButton importJedi;
-    JButton importZakonow;
-    JSlider poziomMocy;
+
     JTextArea listaZakonow;
-    JTextArea listaJedi;
+    JTextField inputNazwaZak;
     JList<Jedi> dostepniJedi;
     DefaultListModel<Jedi> model;
-    JComboBox<String> kolory;
+    JButton importZakonow;
+    JButton eksportZak;
+    JTextField plikZakonow;
+
+    JTextArea listaJedi;
     JTextField inputNazwaJedi;
+    JComboBox<String> kolory;
+    JSlider poziomMocy;
     ButtonGroup strona;
+    JButton importJedi;
+    JButton eksportJedi;
+    JTextField jediPath;
+
 
 
     public PanelZakonu(JFrame ramka) {
@@ -78,10 +88,10 @@ public class PanelZakonu extends JPanel {
 
         importZakonow = new JButton("Import");
         importZakonow.setBounds(30, 620, 100, 25);
-        importZakonow.addActionListener(new AkcjaPobrania());
+//        importZakonow.addActionListener(new AkcjaPobrania());
         add(importZakonow);
 
-        JButton eksportZak = new JButton("Eksport");
+        eksportZak = new JButton("Eksport");
         eksportZak.setBounds(30, 655, 100, 25);
         add(eksportZak);
 
@@ -93,13 +103,11 @@ public class PanelZakonu extends JPanel {
         JButton zarejestrujZak = new JButton("Zarejestruj");
         zarejestrujZak.setBounds(150, 700, 100, 20);
         zarejestrujZak.addActionListener(new StworzZakon());
-        zarejestrujZak.addActionListener(new PowolajJediDoBazy());
         add(zarejestrujZak);
 
         JButton wyczyscZak = new JButton("Wyczysc");
         wyczyscZak.setBounds(260, 700, 100, 20);
         wyczyscZak.addActionListener(new WyczyscZakon());
-        wyczyscZak.addActionListener(new PowolajJediDoBazy());
         add(wyczyscZak);
 
 
@@ -172,11 +180,12 @@ public class PanelZakonu extends JPanel {
 
         importJedi = new JButton("Import");
         importJedi.setBounds(460, 620, 100, 25);
-        importJedi.addActionListener(new AkcjaPobrania());
+        importJedi.addActionListener(new AkcjaOdczytuZPliku());
         add(importJedi);
 
-        JButton eksportJedi = new JButton("Eksport");
+        eksportJedi = new JButton("Eksport");
         eksportJedi.setBounds(460, 655, 100, 25);
+        eksportJedi.addActionListener(new AkcjaZapisuDoPliku());
         add(eksportJedi);
 
         jediPath = new JTextField();
@@ -187,7 +196,6 @@ public class PanelZakonu extends JPanel {
         JButton zarejestrujJedi = new JButton("Zarejestruj");
         zarejestrujJedi.setBounds(580, 700, 100, 20);
         zarejestrujJedi.addActionListener(new RejestracjaJedi());
-        zarejestrujJedi.addActionListener(new PowolajJediDoBazy());
         add(zarejestrujJedi);
 
         JButton wyczyscJedi = new JButton("Wyczysc");
@@ -199,7 +207,7 @@ public class PanelZakonu extends JPanel {
 
 
 
-    class AkcjaPobrania implements ActionListener {
+    class AkcjaZapisuDoPliku implements ActionListener {
 
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -210,14 +218,42 @@ public class PanelZakonu extends JPanel {
             fileChooser.setCurrentDirectory(new File(System.getProperty("user.dir")));
             if(fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
                 File plik = fileChooser.getSelectedFile();
-                if (o == importJedi)
+                if (o == eksportJedi) {
                     jediPath.setText(plik.getPath());
-                else if(o == importZakonow)
+                    try {
+                        zapisDoPlikuJedi();
+                    } catch (FileNotFoundException ex) {
+                        ex.printStackTrace();
+                    }
+                } else if(o == eksportZak)
                     plikZakonow.setText(plik.getPath());
             }
         }
     }
 
+    class AkcjaOdczytuZPliku implements ActionListener {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+
+            Object o = e.getSource();
+
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setCurrentDirectory(new File(System.getProperty("user.dir")));
+            if(fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+                File plik = fileChooser.getSelectedFile();
+                if (o == importJedi) {
+                    jediPath.setText(plik.getPath());
+                    try {
+                        odczytJediZPliku();
+                    } catch (FileNotFoundException ex) {
+                        ex.printStackTrace();
+                    }
+                } else if(o == importZakonow)
+                    plikZakonow.setText(plik.getPath());
+            }
+        }
+    }
 
     class DodanieZakonu implements ActionListener {
 
@@ -230,9 +266,11 @@ public class PanelZakonu extends JPanel {
                 if (!model.isEmpty())
                     model.remove(dostepniJedi.getSelectedIndex());
                 wypiszJedi();
+                powolajJediDoBazy();
             } catch (NullPointerException ex) {
                 System.out.println("Nie wybrano Jedi");
             }
+
         }
     }
 
@@ -264,11 +302,15 @@ public class PanelZakonu extends JPanel {
         public void actionPerformed(ActionEvent actionEvent) {
             if (Jedi.czyJediIstnieje(inputNazwaJedi.getText())) {
                 JOptionPane.showMessageDialog(null,"Rycerz Jedi już istneje w bazie!", "Błąd rejstracji", JOptionPane.WARNING_MESSAGE);
+            } else if (inputNazwaJedi.getText().length() < 1) {
+                JOptionPane.showMessageDialog(null,"Zła nazwa Rycerza Jedi!", "Błąd rejstracji", JOptionPane.WARNING_MESSAGE);
             } else
                 try {
-                new Jedi(inputNazwaJedi.getText(), kolory.getSelectedItem().toString(), poziomMocy.getValue(), strona.getSelection().getActionCommand(), 1);
+                new Jedi(inputNazwaJedi.getText(), Objects.requireNonNull(kolory.getSelectedItem()).toString(), poziomMocy.getValue(), strona.getSelection().getActionCommand(), 1);
                 wypiszJedi();
                 getDostepniJedi();
+                powolajJediDoBazy();
+                inputNazwaJedi.setText("");
             } catch (NullPointerException ex){
                 JOptionPane.showMessageDialog(null,"Źle zdefiniowany rycerz Jedi!", "Błąd rejstracji", JOptionPane.WARNING_MESSAGE);
             }
@@ -290,6 +332,7 @@ public class PanelZakonu extends JPanel {
 
             wypiszJedi();
             getDostepniJedi();
+            powolajJediDoBazy();
         }
     }
 
@@ -320,6 +363,8 @@ public class PanelZakonu extends JPanel {
                     new Zakon(data.getInt("ID_Zakonu"), data.getString("Nazwa"), data.getInt("Ilosc_Czlonkow"));
 
                 wypiszZakony();
+                powolajJediDoBazy();
+                inputNazwaZak.setText("");
 
                 if (listaAdeptow.size() > 0)
                     listaAdeptow.subList(0, listaAdeptow.size()).clear();
@@ -331,16 +376,12 @@ public class PanelZakonu extends JPanel {
     }
 
 
-    class PowolajJediDoBazy implements ActionListener {
+    public void powolajJediDoBazy () {
 
-
-        @Override
-        public void actionPerformed(ActionEvent actionEvent) {
-            Connection connection = null;
+        Connection connection = null;
             try {
                 connection = DriverManager.getConnection("jdbc:postgresql:Jedi", "postgres", "425@hejBudowa");
                 Statement statement = connection.createStatement();
-                ResultSet data = statement.executeQuery("SELECT * FROM Jedi");
                 statement.execute("DELETE FROM JEDI");
 
 
@@ -355,7 +396,34 @@ public class PanelZakonu extends JPanel {
 
             wypiszJedi();
             getDostepniJedi();
-
-        }
     }
+
+
+
+    public void odczytJediZPliku () throws FileNotFoundException {
+
+        File file = new File(jediPath.getText());
+        Scanner scanner = new Scanner(file);
+        String lista = "";
+
+        while (scanner.hasNextLine()) {
+            lista += (Szfrowanie.deszyfrowanieTekstu(scanner.nextLine()));
+            lista += "\n";
+        }
+        listaJedi.setText(lista);
+    }
+
+
+    public void zapisDoPlikuJedi () throws FileNotFoundException {
+
+        File file = new File(jediPath.getText());
+        PrintWriter zapis = new PrintWriter(file);
+
+        zapis.print(Szfrowanie.szyfrowanieJedi(Jedi.listaJedi));
+
+        zapis.close();
+    }
+    
+
+
 }

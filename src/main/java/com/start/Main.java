@@ -1,6 +1,9 @@
 package com.start;
 
 import com.gui.PanelZakonu;
+import com.zasoby.Jedi;
+import com.zasoby.Szfrowanie;
+
 import javax.swing.*;
 
 
@@ -17,5 +20,6 @@ public class Main {
         okno.pack();
 
 
+        System.out.println(Szfrowanie.szyfrowanieJedi(Jedi.listaJedi));
     }
 }
