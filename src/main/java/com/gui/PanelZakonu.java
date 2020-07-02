@@ -88,11 +88,12 @@ public class PanelZakonu extends JPanel {
 
         importZakonow = new JButton("Import");
         importZakonow.setBounds(30, 620, 100, 25);
-//        importZakonow.addActionListener(new AkcjaPobrania());
+        importZakonow.addActionListener(new AkcjaOdczytuZPliku());
         add(importZakonow);
 
         eksportZak = new JButton("Eksport");
         eksportZak.setBounds(30, 655, 100, 25);
+        eksportZak.addActionListener(new AkcjaZapisuDoPliku());
         add(eksportZak);
 
         plikZakonow = new JTextField();
@@ -225,8 +226,15 @@ public class PanelZakonu extends JPanel {
                     } catch (FileNotFoundException ex) {
                         ex.printStackTrace();
                     }
-                } else if(o == eksportZak)
+                } else if(o == eksportZak) {
                     plikZakonow.setText(plik.getPath());
+                    try {
+                        zapisDoPlikuZakonow();
+                    } catch (FileNotFoundException ex) {
+                        ex.printStackTrace();
+                    }
+
+                }
             }
         }
     }
@@ -249,8 +257,15 @@ public class PanelZakonu extends JPanel {
                     } catch (FileNotFoundException ex) {
                         ex.printStackTrace();
                     }
-                } else if(o == importZakonow)
+                } else if(o == importZakonow) {
                     plikZakonow.setText(plik.getPath());
+                    try {
+                        odczytZakonowZPliku();
+                    } catch (FileNotFoundException ex) {
+                        ex.printStackTrace();
+                    }
+
+                }
             }
         }
     }
@@ -399,6 +414,31 @@ public class PanelZakonu extends JPanel {
     }
 
 
+    public void odczytZakonowZPliku () throws FileNotFoundException {
+
+        File file = new File(plikZakonow.getText());
+        Scanner scanner = new Scanner(file);
+        String lista = "";
+
+        while (scanner.hasNextLine()) {
+            lista += (Szfrowanie.deszyfrowanieTekstu(scanner.nextLine()));
+            lista += "\n";
+        }
+
+        listaZakonow.setText(lista);
+    }
+
+    public void zapisDoPlikuZakonow () throws FileNotFoundException {
+
+        File file = new File(plikZakonow.getText());
+        PrintWriter zapis = new PrintWriter(file);
+
+        zapis.print(Szfrowanie.szyfrowanieZakonu(Zakon.getLista()));
+
+        zapis.close();
+
+    }
+
 
     public void odczytJediZPliku () throws FileNotFoundException {
 
@@ -423,7 +463,5 @@ public class PanelZakonu extends JPanel {
 
         zapis.close();
     }
-    
-
 
 }

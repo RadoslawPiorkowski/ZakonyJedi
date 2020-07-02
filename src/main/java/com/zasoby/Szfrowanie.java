@@ -27,6 +27,25 @@ public class Szfrowanie {
 
         return zakodowane;
     }
+    
+    public static String szyfrowanieZakonu (ArrayList<Zakon> lista) {
+        String zakodowane = "";
+        String[] zakon = new String[3];
+
+        for (Zakon z: lista){
+            zakon[0] = z.getIdZakonu() + "";
+            zakon[1] = z.getNazwa();
+            zakon[2] = z.getIloscCzlonkow() + "";
+
+            for (int i = 0; i < zakon.length; i++) {
+                zakodowane += szyfrowanieTekstu(zakon[i]) + "\t";
+            }
+
+            zakodowane += "\n";
+        }
+
+        return zakodowane;
+    }
 
 
     public static String szyfrowanieTekstu (String tekst) {
@@ -56,7 +75,6 @@ public class Szfrowanie {
             else
                 antySzyfr += (char) (tekst.charAt(i) + 4);
         }
-
         return antySzyfr;
     }
 

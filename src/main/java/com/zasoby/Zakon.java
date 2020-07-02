@@ -6,7 +6,7 @@ import java.util.List;
 
 public class Zakon {
 
-    private static List<Zakon> listaZakonow = new ArrayList<Zakon>();
+    private static ArrayList<Zakon> listaZakonow = new ArrayList<Zakon>();
 
     static {
         Connection connection = null;
@@ -43,6 +43,10 @@ public class Zakon {
 
     public int getIloscCzlonkow() {
         return iloscCzlonkow;
+    }
+
+    public static ArrayList<Zakon> getLista () {
+        return listaZakonow;
     }
 
     public static String getListaZakonow() {
