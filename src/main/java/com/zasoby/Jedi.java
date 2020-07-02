@@ -91,6 +91,7 @@ public class Jedi {
                 + ", " + poziomMocy + " - " + stronaMocy+ "\n";
     }
 
+
     public static boolean czyJediIstnieje(String imie) {
         for (Jedi j: listaJedi)
             if (j.getImie().equals(imie)) {

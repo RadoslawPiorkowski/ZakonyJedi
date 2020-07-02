@@ -5,6 +5,7 @@ import com.zasoby.Szfrowanie;
 import com.zasoby.Zakon;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -206,6 +207,63 @@ public class PanelZakonu extends JPanel {
     }
 
 
+    @Override
+    public Dimension getPreferredSize() {
+        return new Dimension(830, 770);
+    }
+
+
+    class DodanieZakonu implements ActionListener {
+
+        @Override
+        public void actionPerformed(ActionEvent actionEvent) {
+            try {
+                listaAdeptow.add(dostepniJedi.getSelectedValue());
+                dostepniJedi.getSelectedValue().setIdZakonu(Zakon.getNastepneID());
+                System.out.println(dostepniJedi.getSelectedValue().getIdZakonu());
+                if (!model.isEmpty())
+                    model.remove(dostepniJedi.getSelectedIndex());
+                wypiszJedi();
+                powolajJediDoBazy();
+            } catch (NullPointerException ex) {
+                System.out.println("Nie wybrano Jedi");
+            }
+        }
+    }
+
+
+    class AkcjaOdczytuZPliku implements ActionListener {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+
+            Object o = e.getSource();
+
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+            fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("*.txt", "txt"));
+            fileChooser.setAcceptAllFileFilterUsed(false);
+            fileChooser.setCurrentDirectory(new File(System.getProperty("user.dir")));
+            if(fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+                File plik = fileChooser.getSelectedFile();
+                if (o == importJedi) {
+                    jediPath.setText(plik.getPath());
+                    try {
+                        odczytJediZPliku();
+                    } catch (FileNotFoundException ex) {
+                        ex.printStackTrace();
+                    }
+                } else if(o == importZakonow) {
+                    plikZakonow.setText(plik.getPath());
+                    try {
+                        odczytZakonowZPliku();
+                    } catch (FileNotFoundException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            }
+        }
+    }
 
 
     class AkcjaZapisuDoPliku implements ActionListener {
@@ -216,6 +274,9 @@ public class PanelZakonu extends JPanel {
             Object o = e.getSource();
 
             JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+            fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("*.txt", "txt"));
+            fileChooser.setAcceptAllFileFilterUsed(false);
             fileChooser.setCurrentDirectory(new File(System.getProperty("user.dir")));
             if(fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
                 File plik = fileChooser.getSelectedFile();
@@ -239,98 +300,44 @@ public class PanelZakonu extends JPanel {
         }
     }
 
-    class AkcjaOdczytuZPliku implements ActionListener {
 
-        @Override
-        public void actionPerformed(ActionEvent e) {
-
-            Object o = e.getSource();
-
-            JFileChooser fileChooser = new JFileChooser();
-            fileChooser.setCurrentDirectory(new File(System.getProperty("user.dir")));
-            if(fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
-                File plik = fileChooser.getSelectedFile();
-                if (o == importJedi) {
-                    jediPath.setText(plik.getPath());
-                    try {
-                        odczytJediZPliku();
-                    } catch (FileNotFoundException ex) {
-                        ex.printStackTrace();
-                    }
-                } else if(o == importZakonow) {
-                    plikZakonow.setText(plik.getPath());
-                    try {
-                        odczytZakonowZPliku();
-                    } catch (FileNotFoundException ex) {
-                        ex.printStackTrace();
-                    }
-
-                }
-            }
-        }
-    }
-
-    class DodanieZakonu implements ActionListener {
+    class StworzZakon implements ActionListener {
 
         @Override
         public void actionPerformed(ActionEvent actionEvent) {
-            try {
-                listaAdeptow.add(dostepniJedi.getSelectedValue());
-                dostepniJedi.getSelectedValue().setIdZakonu(Zakon.getNastepneID());
-                System.out.println(dostepniJedi.getSelectedValue().getIdZakonu());
-                if (!model.isEmpty())
-                    model.remove(dostepniJedi.getSelectedIndex());
-                wypiszJedi();
-                powolajJediDoBazy();
-            } catch (NullPointerException ex) {
-                System.out.println("Nie wybrano Jedi");
-            }
+            Connection connection = null;
 
-        }
-    }
-
-    public void wypiszZakony () {
-        listaZakonow.setText(Zakon.getListaZakonow());
-    }
-
-    public void wypiszJedi() {
-        listaJedi.setText(Jedi.getListaJedi());
-    }
-
-    public void getDostepniJedi() {
-        model.removeAllElements();
-        dostepniJedi.setModel(model);
-        for (Jedi j : Jedi.getJediBezZakonu())
-            model.addElement(j);
-    }
-
-
-    @Override
-    public Dimension getPreferredSize() {
-        return new Dimension(830, 770);
-    }
-
-
-    class RejestracjaJedi implements ActionListener {
-
-        @Override
-        public void actionPerformed(ActionEvent actionEvent) {
-            if (Jedi.czyJediIstnieje(inputNazwaJedi.getText())) {
-                JOptionPane.showMessageDialog(null,"Rycerz Jedi już istneje w bazie!", "Błąd rejstracji", JOptionPane.WARNING_MESSAGE);
-            } else if (inputNazwaJedi.getText().length() < 1) {
-                JOptionPane.showMessageDialog(null,"Zła nazwa Rycerza Jedi!", "Błąd rejstracji", JOptionPane.WARNING_MESSAGE);
+            if (inputNazwaZak.getText().isEmpty() || inputNazwaZak.getText().length() > 20) {
+                JOptionPane.showMessageDialog(null,"Brak lub niewłaściwa nazwa zakonu!", "Błąd rejstracji", JOptionPane.WARNING_MESSAGE);
+            } else if (Zakon.czyZakonIstnieje(inputNazwaZak.getText())) {
+                JOptionPane.showMessageDialog(null,"Zakon o takiej nazwie już istnieje!", "Błąd rejstracji", JOptionPane.WARNING_MESSAGE);
             } else
                 try {
-                new Jedi(inputNazwaJedi.getText(), Objects.requireNonNull(kolory.getSelectedItem()).toString(), poziomMocy.getValue(), strona.getSelection().getActionCommand(), 1);
-                wypiszJedi();
-                getDostepniJedi();
-                powolajJediDoBazy();
-                inputNazwaJedi.setText("");
-            } catch (NullPointerException ex){
-                JOptionPane.showMessageDialog(null,"Źle zdefiniowany rycerz Jedi!", "Błąd rejstracji", JOptionPane.WARNING_MESSAGE);
-            }
+                    connection = DriverManager.getConnection("jdbc:postgresql:Jedi", "postgres", "425@hejBudowa");
+                    Statement statement = connection.createStatement();
+
+                    statement.execute("INSERT INTO Zakony (Nazwa, Ilosc_Czlonkow) VALUES " +
+                            "('" + inputNazwaZak.getText() + "', " + listaAdeptow.size() + ");");
+
+                    Zakon.wyczyscListeZakonow();
+
+                    ResultSet data = statement.executeQuery("SELECT * FROM Zakony");
+                    while (data.next())
+                        new Zakon(data.getInt("ID_Zakonu"), data.getString("Nazwa"), data.getInt("Ilosc_Czlonkow"));
+
+                    wypiszZakony();
+                    powolajJediDoBazy();
+                    inputNazwaZak.setText("");
+
+                    if (listaAdeptow.size() > 0)
+                        listaAdeptow.subList(0, listaAdeptow.size()).clear();
+
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
         }
     }
+
 
     class WyczyscZakon implements ActionListener {
 
@@ -352,44 +359,42 @@ public class PanelZakonu extends JPanel {
     }
 
 
-
-    class StworzZakon implements ActionListener {
+    class RejestracjaJedi implements ActionListener {
 
         @Override
         public void actionPerformed(ActionEvent actionEvent) {
-            Connection connection = null;
-
-            if (inputNazwaZak.getText().isEmpty()) {
-                JOptionPane.showMessageDialog(null,"Brak nazwy zakonu!", "Błąd rejstracji", JOptionPane.WARNING_MESSAGE);
-            } else if (Zakon.czyZakonIstnieje(inputNazwaZak.getText())) {
-                JOptionPane.showMessageDialog(null,"Zakon o takiej nazwie już istnieje!", "Błąd rejstracji", JOptionPane.WARNING_MESSAGE);
+            if (Jedi.czyJediIstnieje(inputNazwaJedi.getText())) {
+                JOptionPane.showMessageDialog(null,"Rycerz Jedi już istneje w bazie!", "Błąd rejstracji", JOptionPane.WARNING_MESSAGE);
+            } else if (inputNazwaJedi.getText().length() < 1 || inputNazwaJedi.getText().length() > 20) {
+                JOptionPane.showMessageDialog(null,"Zła nazwa Rycerza Jedi!", "Błąd rejstracji", JOptionPane.WARNING_MESSAGE);
             } else
                 try {
-                connection = DriverManager.getConnection("jdbc:postgresql:Jedi", "postgres", "425@hejBudowa");
-                Statement statement = connection.createStatement();
-
-                statement.execute("INSERT INTO Zakony (Nazwa, Ilosc_Czlonkow) VALUES " +
-                        "('" + inputNazwaZak.getText() + "', " + listaAdeptow.size() + ");");
-
-                Zakon.wyczyscListeZakonow();
-
-                ResultSet data = statement.executeQuery("SELECT * FROM Zakony");
-                while (data.next())
-                    new Zakon(data.getInt("ID_Zakonu"), data.getString("Nazwa"), data.getInt("Ilosc_Czlonkow"));
-
-                wypiszZakony();
-                powolajJediDoBazy();
-                inputNazwaZak.setText("");
-
-                if (listaAdeptow.size() > 0)
-                    listaAdeptow.subList(0, listaAdeptow.size()).clear();
-
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
+                    new Jedi(inputNazwaJedi.getText(), Objects.requireNonNull(kolory.getSelectedItem()).toString(), poziomMocy.getValue(), strona.getSelection().getActionCommand(), 1);
+                    wypiszJedi();
+                    getDostepniJedi();
+                    powolajJediDoBazy();
+                    inputNazwaJedi.setText("");
+                } catch (NullPointerException ex){
+                    JOptionPane.showMessageDialog(null,"Źle zdefiniowany rycerz Jedi!", "Błąd rejstracji", JOptionPane.WARNING_MESSAGE);
+                }
         }
     }
 
+
+    public void wypiszZakony () {
+        listaZakonow.setText(Zakon.getListaZakonow());
+    }
+
+    public void wypiszJedi() {
+        listaJedi.setText(Jedi.getListaJedi());
+    }
+
+    public void getDostepniJedi() {
+        model.removeAllElements();
+        dostepniJedi.setModel(model);
+        for (Jedi j : Jedi.getJediBezZakonu())
+            model.addElement(j);
+    }
 
     public void powolajJediDoBazy () {
 
@@ -399,16 +404,13 @@ public class PanelZakonu extends JPanel {
                 Statement statement = connection.createStatement();
                 statement.execute("DELETE FROM JEDI");
 
-
                 for (Jedi j : Jedi.listaJedi)
                     statement.execute("INSERT INTO Jedi (Imie, Kolor_Miecza, Poziom_Mocy, Strona_Mocy, Zakon_ID) VALUES "
                             + "('" + j.getImie() + "' , '" + j.getKolorMiecza() + "', " + j.getPoziomMocy() + ", '" + j.getStronaMocy() + "', " + j.getIdZakonu() + ");");
 
-
             } catch (SQLException e) {
                 e.printStackTrace();
             }
-
             wypiszJedi();
             getDostepniJedi();
     }
@@ -424,7 +426,6 @@ public class PanelZakonu extends JPanel {
             lista += (Szfrowanie.deszyfrowanieTekstu(scanner.nextLine()));
             lista += "\n";
         }
-
         listaZakonow.setText(lista);
     }
 
@@ -436,7 +437,6 @@ public class PanelZakonu extends JPanel {
         zapis.print(Szfrowanie.szyfrowanieZakonu(Zakon.getLista()));
 
         zapis.close();
-
     }
 
 
@@ -463,5 +463,6 @@ public class PanelZakonu extends JPanel {
 
         zapis.close();
     }
+
 
 }
