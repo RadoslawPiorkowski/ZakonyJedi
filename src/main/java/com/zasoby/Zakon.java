@@ -67,4 +67,9 @@ public class Zakon {
             }
         return false;
     }
+
+    public static  int getNastepneID () {
+        return listaZakonow.size();
+    }
+
 }

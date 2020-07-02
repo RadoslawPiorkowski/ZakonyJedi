@@ -1,10 +1,8 @@
 package com.start;
 
 import com.gui.PanelZakonu;
-import com.zasoby.Jedi;
-
 import javax.swing.*;
-import java.awt.*;
+
 
 public class Main {
 

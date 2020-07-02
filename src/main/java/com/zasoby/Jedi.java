@@ -22,7 +22,6 @@ public class Jedi {
         }
     }
 
-    private int idJedi;
     private String imie;
     private String kolorMiecza;
     private int poziomMocy;
@@ -30,7 +29,6 @@ public class Jedi {
     private int idZakonu;
 
     public Jedi(String imie, String kolorMiecza, int poziomMocy, String stronaMocy, int idZakonu) {
-//        this.idJedi = idJedi;
         this.imie = imie;
         this.kolorMiecza = kolorMiecza;
         this.poziomMocy = poziomMocy;
@@ -39,10 +37,6 @@ public class Jedi {
         listaJedi.add(this);
     }
 
-
-    public int getIdJedi() {
-        return idJedi;
-    }
 
     public String getImie() {
         return imie;
@@ -95,5 +89,13 @@ public class Jedi {
     public String toString() {
         return imie + ", " + kolorMiecza
                 + ", " + poziomMocy + " - " + stronaMocy+ "\n";
+    }
+
+    public static boolean czyJediIstnieje(String imie) {
+        for (Jedi j: listaJedi)
+            if (j.getImie().equals(imie)) {
+                return true;
+            }
+        return false;
     }
 }

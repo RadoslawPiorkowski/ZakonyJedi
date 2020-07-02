@@ -4,8 +4,6 @@ import com.zasoby.Jedi;
 import com.zasoby.Zakon;
 
 import javax.swing.*;
-import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.swing.plaf.nimbus.NimbusLookAndFeel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -95,11 +93,13 @@ public class PanelZakonu extends JPanel {
         JButton zarejestrujZak = new JButton("Zarejestruj");
         zarejestrujZak.setBounds(150, 700, 100, 20);
         zarejestrujZak.addActionListener(new StworzZakon());
+        zarejestrujZak.addActionListener(new PowolajJediDoBazy());
         add(zarejestrujZak);
 
         JButton wyczyscZak = new JButton("Wyczysc");
         wyczyscZak.setBounds(260, 700, 100, 20);
         wyczyscZak.addActionListener(new WyczyscZakon());
+        wyczyscZak.addActionListener(new PowolajJediDoBazy());
         add(wyczyscZak);
 
 
@@ -187,6 +187,7 @@ public class PanelZakonu extends JPanel {
         JButton zarejestrujJedi = new JButton("Zarejestruj");
         zarejestrujJedi.setBounds(580, 700, 100, 20);
         zarejestrujJedi.addActionListener(new RejestracjaJedi());
+        zarejestrujJedi.addActionListener(new PowolajJediDoBazy());
         add(zarejestrujJedi);
 
         JButton wyczyscJedi = new JButton("Wyczysc");
@@ -224,7 +225,7 @@ public class PanelZakonu extends JPanel {
         public void actionPerformed(ActionEvent actionEvent) {
             try {
                 listaAdeptow.add(dostepniJedi.getSelectedValue());
-                dostepniJedi.getSelectedValue().setIdZakonu(100);
+                dostepniJedi.getSelectedValue().setIdZakonu(Zakon.getNastepneID());
                 System.out.println(dostepniJedi.getSelectedValue().getIdZakonu());
                 if (!model.isEmpty())
                     model.remove(dostepniJedi.getSelectedIndex());
@@ -261,9 +262,11 @@ public class PanelZakonu extends JPanel {
 
         @Override
         public void actionPerformed(ActionEvent actionEvent) {
-            Jedi nowyJedi;
-            try {
-                nowyJedi = new Jedi(inputNazwaJedi.getText(), kolory.getSelectedItem().toString(), poziomMocy.getValue(), strona.getSelection().getActionCommand(), 1);
+            if (Jedi.czyJediIstnieje(inputNazwaJedi.getText())) {
+                JOptionPane.showMessageDialog(null,"Rycerz Jedi już istneje w bazie!", "Błąd rejstracji", JOptionPane.WARNING_MESSAGE);
+            } else
+                try {
+                new Jedi(inputNazwaJedi.getText(), kolory.getSelectedItem().toString(), poziomMocy.getValue(), strona.getSelection().getActionCommand(), 1);
                 wypiszJedi();
                 getDostepniJedi();
             } catch (NullPointerException ex){
@@ -328,7 +331,7 @@ public class PanelZakonu extends JPanel {
     }
 
 
-    class PowolajJedi implements ActionListener {
+    class PowolajJediDoBazy implements ActionListener {
 
 
         @Override
@@ -338,16 +341,21 @@ public class PanelZakonu extends JPanel {
                 connection = DriverManager.getConnection("jdbc:postgresql:Jedi", "postgres", "425@hejBudowa");
                 Statement statement = connection.createStatement();
                 ResultSet data = statement.executeQuery("SELECT * FROM Jedi");
+                statement.execute("DELETE FROM JEDI");
 
-                while (data.next())
-                    new Jedi(data.getString("Imie"), data.getString("Kolor_Miecza"), data.getInt("Poziom_Mocy"), data.getString("Strona_Mocy"), data.getInt("Zakon_ID"));
+
+                for (Jedi j : Jedi.listaJedi)
+                    statement.execute("INSERT INTO Jedi (Imie, Kolor_Miecza, Poziom_Mocy, Strona_Mocy, Zakon_ID) VALUES "
+                            + "('" + j.getImie() + "' , '" + j.getKolorMiecza() + "', " + j.getPoziomMocy() + ", '" + j.getStronaMocy() + "', " + j.getIdZakonu() + ");");
+
+
             } catch (SQLException e) {
                 e.printStackTrace();
             }
 
+            wypiszJedi();
+            getDostepniJedi();
 
-            
         }
     }
-
 }
