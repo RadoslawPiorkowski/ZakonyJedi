@@ -8,12 +8,13 @@ public class Jedi {
 
     public static ArrayList<Jedi> listaJedi = new ArrayList<Jedi>();
 
+    // hasło do odzielnnej bazy danych albo zmienna
+    // GUI za długie, dodać metody konstrukcyjne
+    //dostep do bazy danych tez z metody
+
     static {
-        Connection connection = null;
         try {
-            connection = DriverManager.getConnection("jdbc:postgresql:Jedi", "postgres", "425@hejBudowa");
-            Statement statement = connection.createStatement();
-            ResultSet data = statement.executeQuery("SELECT * FROM Jedi");
+            ResultSet data = BazaDanych.getStatmentZBazyDanych().executeQuery("SELECT * FROM Jedi");
 
             while (data.next())
                 new Jedi(data.getString("Imie"), data.getString("Kolor_Miecza"), data.getInt("Poziom_Mocy"), data.getString("Strona_Mocy"), data.getInt("Zakon_ID"));

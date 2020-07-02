@@ -1,8 +1,5 @@
 package com.zasoby;
 
-import com.gui.PanelZakonu;
-
-import java.io.File;
 import java.util.ArrayList;
 
 public class Szfrowanie {

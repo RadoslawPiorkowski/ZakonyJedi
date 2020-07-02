@@ -1,5 +1,6 @@
 package com.gui;
 
+import com.zasoby.BazaDanych;
 import com.zasoby.Jedi;
 import com.zasoby.Szfrowanie;
 import com.zasoby.Zakon;
@@ -47,38 +48,55 @@ public class PanelZakonu extends JPanel {
 
         setLayout(null);
 
-        JSeparator separator = new JSeparator();
-        separator.setOrientation(SwingConstants.VERTICAL);
-        separator.setBounds(415, 10, 5, 750);
-        add(separator);
-
-        JLabel zakony = new JLabel("Zakony Jedi");
-        zakony.setBounds(160, 20, 100, 25);
-        add(zakony);
-
-        listaZakonow = new JTextArea();
-        listaZakonow.setBounds(20, 50, 360, 300);
-        listaZakonow.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+        //JTextArea
+        listaZakonow = Budowa.stworzTextArea(ramka,20,50,360,300);
+        listaJedi = Budowa.stworzTextArea(ramka, 450,50,360,300);
         wypiszZakony();
-        add(listaZakonow);
+        wypiszJedi();
 
-        JLabel rejestracjaZakonu = new JLabel("Rejestracja Zakonu Jedi");
-        rejestracjaZakonu.setBounds(135, 355,200, 25);
-        add(rejestracjaZakonu);
+        //JLabele
+        Budowa.stworzJLabel(ramka, "Zakony Jedi", 160, 20, 100, 25);
+        Budowa.stworzJLabel(ramka, "Rejestracja Zakonu Jedi", 135,355,200,25);
+        Budowa.stworzJLabel(ramka, "Nazwa:", 30,385,100,25);
+        Budowa.stworzJLabel(ramka, "Jedi", 610,20,100,25);
+        Budowa.stworzJLabel(ramka, "Rejestracja Jedi", 580,355,200,25);
+        Budowa.stworzJLabel(ramka, "Nazwa:", 460,385,100,25);
+        Budowa.stworzJLabel(ramka, "Kolor miecza:",460,425,100,25 );
+        Budowa.stworzJLabel(ramka, "Moc:", 460,495,100,25);
+        Budowa.stworzJLabel(ramka, "Strona mocy:", 460,580,100,25);
 
-        JLabel nazwa = new JLabel("Nazwa:");
-        nazwa.setBounds(30, 385, 100, 25);
-        add(nazwa);
+        //JTextField
+        inputNazwaZak = Budowa.stworzTextField(ramka, 150,385,220,25);
+        plikZakonow = Budowa.stworzTextFieldBezEdycji(ramka,150,640,220,25);
+        inputNazwaJedi = Budowa.stworzTextField(ramka,580,385,220,25);
+        jediPath = Budowa.stworzTextFieldBezEdycji(ramka,580,640,220,25);
 
-        inputNazwaZak = new JTextField();
-        inputNazwaZak.setBounds(150, 385, 220, 25);
-        add(inputNazwaZak);
+        //JButton
+        Budowa.stworzButton(ramka, "Wybierz", 30, 420, 100,25, new DodanieZakonu());
+        importZakonow = Budowa.stworzButton(ramka, "Import", 30,620,100,25,new AkcjaOdczytuZPliku(), true);
+        eksportZak = Budowa.stworzButton(ramka, "Eksport", 30,655,100,25, new AkcjaZapisuDoPliku(), true);
+        Budowa.stworzButton(ramka, "Zarejestruj", 150,700,100,20, new StworzZakon());
+        Budowa.stworzButton(ramka, "Wyczysc", 260,700,100,20, new WyczyscZakon());
+        importJedi = Budowa.stworzButton(ramka,"Import",460,620,100,25, new AkcjaOdczytuZPliku(), true);
+        eksportJedi = Budowa.stworzButton(ramka,"Eksport",460,655,100,25,new AkcjaZapisuDoPliku(), true);
+        Budowa.stworzButton(ramka, "Zarejestruj", 500,700,100,20, new RejestracjaJedi());
+        Budowa.stworzButton(ramka, "Wyczysc", 690,700,100,20, new WyczyscJedi());
 
-        JButton wybierz = new JButton("Wybierz");
-        wybierz.setBounds(30, 420, 100, 25);
-        wybierz.addActionListener(new DodanieZakonu());
-        add(wybierz);
+        //JSeparator
+        Budowa.stworzSeparatorPionowy(ramka,415,10,5,750);
 
+        //JSlider
+        poziomMocy = Budowa.stworzSlider(ramka,580,495,220,50,50,200);
+
+        //JButtonGrop
+        strona = new ButtonGroup();
+        Budowa.JRadioButton(ramka, "ciemna",580,580,100,25, strona);
+        Budowa.JRadioButton(ramka, "jasna",690,580,100,25, strona);
+
+        //JComboBox
+        kolory = Budowa.stworzComboKolorow(ramka, 580,425,220,25);
+
+        //JList
         dostepniJedi = new JList<Jedi>();
         dostepniJedi.setBounds(150, 420, 220, 200);
         dostepniJedi.setBorder(BorderFactory.createLineBorder(Color.BLACK));
@@ -86,123 +104,6 @@ public class PanelZakonu extends JPanel {
         getDostepniJedi();
         dostepniJedi.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         add(dostepniJedi);
-
-        importZakonow = new JButton("Import");
-        importZakonow.setBounds(30, 620, 100, 25);
-        importZakonow.addActionListener(new AkcjaOdczytuZPliku());
-        add(importZakonow);
-
-        eksportZak = new JButton("Eksport");
-        eksportZak.setBounds(30, 655, 100, 25);
-        eksportZak.addActionListener(new AkcjaZapisuDoPliku());
-        add(eksportZak);
-
-        plikZakonow = new JTextField();
-        plikZakonow.setBounds(150, 640, 220, 25);
-        plikZakonow.setEditable(false);
-        add(plikZakonow);
-
-        JButton zarejestrujZak = new JButton("Zarejestruj");
-        zarejestrujZak.setBounds(150, 700, 100, 20);
-        zarejestrujZak.addActionListener(new StworzZakon());
-        add(zarejestrujZak);
-
-        JButton wyczyscZak = new JButton("Wyczysc");
-        wyczyscZak.setBounds(260, 700, 100, 20);
-        wyczyscZak.addActionListener(new WyczyscZakon());
-        add(wyczyscZak);
-
-
-/////////////////////////////////////////////////////////////////////
-
-        JLabel jedi = new JLabel("Jedi");
-        jedi.setBounds(610, 20, 100, 25);
-        add(jedi);
-
-        listaJedi = new JTextArea();
-        listaJedi.setBounds(450, 50, 360, 300);
-        listaJedi.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-        wypiszJedi();
-        add(listaJedi);
-
-        JLabel rejestracjaJedi = new JLabel("Rejestracja Jedi");
-        rejestracjaJedi.setBounds(580, 355,200, 25);
-        add(rejestracjaJedi);
-
-        JLabel nazwaJedi = new JLabel("Nazwa:");
-        nazwaJedi.setBounds(460, 385, 100, 25);
-        add(nazwaJedi);
-
-        inputNazwaJedi = new JTextField();
-        inputNazwaJedi.setBounds(580, 385, 220, 25);
-        add(inputNazwaJedi);
-
-        JLabel kolorMiecza = new JLabel("Kolor miecza:");
-        kolorMiecza.setBounds(460, 425, 100, 25);
-        add(kolorMiecza);
-
-        kolory = new JComboBox<String>();
-        kolory.addItem("Zielony");
-        kolory.addItem("Niebieski");
-        kolory.addItem("Fioletowy");
-        kolory.addItem("Czerwony");
-        kolory.setBounds(580, 425, 220, 25);
-        add(kolory);
-
-        JLabel moc = new JLabel("Moc:");
-        moc.setBounds(460, 495, 100, 25);
-        add(moc);
-
-        poziomMocy = new JSlider(JSlider.HORIZONTAL, 0,1000,1);
-        poziomMocy.setMinorTickSpacing(50);
-        poziomMocy.setMajorTickSpacing(200);
-        poziomMocy.setPaintLabels(true);
-        poziomMocy.setPaintTicks(true);
-        poziomMocy.setBounds(580,495,220,50);
-        add(poziomMocy);
-
-        JLabel stronaMocy = new JLabel("Strona mocy:");
-        stronaMocy.setBounds(460, 580, 100,25);
-        add(stronaMocy);
-
-        JRadioButton ciemna = new JRadioButton("ciemna");
-        ciemna.setBounds(580, 580, 100, 25);
-        ciemna.setActionCommand(ciemna.getText());
-        add(ciemna);
-
-        JRadioButton jasna = new JRadioButton("jasna");
-        jasna.setBounds(690, 580, 100, 25);
-        jasna.setActionCommand(jasna.getText());
-        add(jasna);
-
-        strona = new ButtonGroup();
-        strona.add(ciemna);
-        strona.add(jasna);
-
-
-        importJedi = new JButton("Import");
-        importJedi.setBounds(460, 620, 100, 25);
-        importJedi.addActionListener(new AkcjaOdczytuZPliku());
-        add(importJedi);
-
-        eksportJedi = new JButton("Eksport");
-        eksportJedi.setBounds(460, 655, 100, 25);
-        eksportJedi.addActionListener(new AkcjaZapisuDoPliku());
-        add(eksportJedi);
-
-        jediPath = new JTextField();
-        jediPath.setBounds(580, 640, 220, 25);
-        jediPath.setEditable(false);
-        add(jediPath);
-
-        JButton zarejestrujJedi = new JButton("Zarejestruj");
-        zarejestrujJedi.setBounds(580, 700, 100, 20);
-        zarejestrujJedi.addActionListener(new RejestracjaJedi());
-        add(zarejestrujJedi);
-
-        JButton wyczyscJedi = new JButton("Wyczysc");
-        wyczyscJedi.setBounds(690, 700, 100, 20);
-        add(wyczyscJedi);
 
     }
 
@@ -305,7 +206,6 @@ public class PanelZakonu extends JPanel {
 
         @Override
         public void actionPerformed(ActionEvent actionEvent) {
-            Connection connection = null;
 
             if (inputNazwaZak.getText().isEmpty() || inputNazwaZak.getText().length() > 20) {
                 JOptionPane.showMessageDialog(null,"Brak lub niewłaściwa nazwa zakonu!", "Błąd rejstracji", JOptionPane.WARNING_MESSAGE);
@@ -313,15 +213,11 @@ public class PanelZakonu extends JPanel {
                 JOptionPane.showMessageDialog(null,"Zakon o takiej nazwie już istnieje!", "Błąd rejstracji", JOptionPane.WARNING_MESSAGE);
             } else
                 try {
-                    connection = DriverManager.getConnection("jdbc:postgresql:Jedi", "postgres", "425@hejBudowa");
-                    Statement statement = connection.createStatement();
-
-                    statement.execute("INSERT INTO Zakony (Nazwa, Ilosc_Czlonkow) VALUES " +
+                    BazaDanych.getStatmentZBazyDanych().execute("INSERT INTO Zakony (Nazwa, Ilosc_Czlonkow) VALUES " +
                             "('" + inputNazwaZak.getText() + "', " + listaAdeptow.size() + ");");
 
                     Zakon.wyczyscListeZakonow();
-
-                    ResultSet data = statement.executeQuery("SELECT * FROM Zakony");
+                    ResultSet data = BazaDanych.getStatmentZBazyDanych().executeQuery("SELECT * FROM Zakony");
                     while (data.next())
                         new Zakon(data.getInt("ID_Zakonu"), data.getString("Nazwa"), data.getInt("Ilosc_Czlonkow"));
 
@@ -359,6 +255,7 @@ public class PanelZakonu extends JPanel {
     }
 
 
+
     class RejestracjaJedi implements ActionListener {
 
         @Override
@@ -380,6 +277,18 @@ public class PanelZakonu extends JPanel {
         }
     }
 
+    class WyczyscJedi implements ActionListener {
+
+        @Override
+        public void actionPerformed(ActionEvent actionEvent) {
+
+            inputNazwaJedi.setText(null);
+            kolory.setSelectedIndex(0);
+            poziomMocy.setValue(0);
+            strona.clearSelection();
+        }
+    }
+
 
     public void wypiszZakony () {
         listaZakonow.setText(Zakon.getListaZakonow());
@@ -398,14 +307,11 @@ public class PanelZakonu extends JPanel {
 
     public void powolajJediDoBazy () {
 
-        Connection connection = null;
             try {
-                connection = DriverManager.getConnection("jdbc:postgresql:Jedi", "postgres", "425@hejBudowa");
-                Statement statement = connection.createStatement();
-                statement.execute("DELETE FROM JEDI");
+                BazaDanych.getStatmentZBazyDanych().execute("DELETE FROM JEDI");
 
                 for (Jedi j : Jedi.listaJedi)
-                    statement.execute("INSERT INTO Jedi (Imie, Kolor_Miecza, Poziom_Mocy, Strona_Mocy, Zakon_ID) VALUES "
+                    BazaDanych.getStatmentZBazyDanych().execute("INSERT INTO Jedi (Imie, Kolor_Miecza, Poziom_Mocy, Strona_Mocy, Zakon_ID) VALUES "
                             + "('" + j.getImie() + "' , '" + j.getKolorMiecza() + "', " + j.getPoziomMocy() + ", '" + j.getStronaMocy() + "', " + j.getIdZakonu() + ");");
 
             } catch (SQLException e) {
@@ -427,6 +333,7 @@ public class PanelZakonu extends JPanel {
             lista += "\n";
         }
         listaZakonow.setText(lista);
+        scanner.close();
     }
 
     public void zapisDoPlikuZakonow () throws FileNotFoundException {
@@ -451,6 +358,7 @@ public class PanelZakonu extends JPanel {
             lista += "\n";
         }
         listaJedi.setText(lista);
+        scanner.close();
     }
 
 
@@ -463,6 +371,4 @@ public class PanelZakonu extends JPanel {
 
         zapis.close();
     }
-
-
 }

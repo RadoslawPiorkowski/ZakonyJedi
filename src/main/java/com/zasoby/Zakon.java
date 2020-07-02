@@ -9,11 +9,8 @@ public class Zakon {
     private static ArrayList<Zakon> listaZakonow = new ArrayList<Zakon>();
 
     static {
-        Connection connection = null;
         try {
-            connection = DriverManager.getConnection("jdbc:postgresql:Jedi", "postgres", "425@hejBudowa");
-            Statement statement = connection.createStatement();
-            ResultSet data = statement.executeQuery("SELECT * FROM Zakony");
+            ResultSet data = BazaDanych.getStatmentZBazyDanych().executeQuery("SELECT * FROM Zakony");
 
             while (data.next())
                 new Zakon(data.getInt("ID_Zakonu"), data.getString("Nazwa"), data.getInt("Ilosc_Czlonkow"));
